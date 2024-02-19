@@ -1,19 +1,25 @@
-const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
-const mongoose = require('mongoose');
-const typeDefs = require('./src/schemas');
-const resolvers = require('./src/resolvers');
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
+import fs from "fs";
 
-async function startServer() {
-  const app = express();
-  const apolloServer = new ApolloServer({ typeDefs, resolvers });
+import { MongoInit } from "./schemas/index.js";
+import Resolvers from "./resolvers/index.js";
 
-  await apolloServer.start();
-  apolloServer.applyMiddleware({ app });
-
-  await mongoose.connect('mongodb://localhost:27017/User', { useNewUrlParser: true });
-
-  app.listen(4000, () => console.log(`Server running on http://localhost:4000${apolloServer.graphqlPath}`));
+const dbstatus = await MongoInit();
+if (!dbstatus) {
+    console.error("Error connecting to MongoDB");
+    process.exit(1);
 }
 
-startServer();
+const typeDefs = fs.readFileSync("./schema.graphql", "utf-8");
+
+const server = new ApolloServer({
+    typeDefs,
+    resolvers: Resolvers,
+});
+
+const { url } = await startStandaloneServer(server, {
+    listen: { port: 4000 },
+});
+
+console.log(`Server ready at: ${url}`);

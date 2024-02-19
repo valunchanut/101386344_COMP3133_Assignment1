@@ -1,19 +1,5 @@
-const { gql } = require('apollo-server-express');
+import Employee from "./EmployeeSchema.js";
+import User from "./UserSchema.js";
+import MongoInit from "./mongoinit.js";
 
-const typeDefs = gql`
-  type User {
-    id: ID!
-    username: String!
-    email: String!
-  }
-
-  type Query {
-    users: [User]
-  }
-
-  type Mutation {
-    signUp(username: String!, email: String!, password: String!): User
-  }
-`;
-
-module.exports = typeDefs;
+export { Employee, User, MongoInit };
